@@ -20,7 +20,7 @@ function agent_by_increasing_ressource(r, b, m, t)
 end
 
 function first_heuristic(r, b, m, t, sorted_task, sorted_agent_by_task)
-    task_to_agent = zeros(t)
+    task_to_agent = zeros(Int64, t)
     x = zeros(m, t)
     r_left = copy(b)
     for task in sorted_task
