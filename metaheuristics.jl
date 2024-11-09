@@ -31,10 +31,7 @@ function descente_VND(r, b, m, t, c, opt, x, list_of_agent)
     @assert final_cost == best_cost
     @assert best_cost >= initial_cost
     @assert verify_sol(x, r, b)
-    
-    # println("number of iterations: $it")
-    # println("improvement: \n final cost: $best_cost VS opt : $opt")
-    return x
+    return x, list_of_agent, best_cost
 end
 
 
