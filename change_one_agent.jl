@@ -1,9 +1,9 @@
 include("heuristic.jl")
 
-function change_one_agent(list_of_agent, x, r, b, m)
+function change_one_agent(list_of_agent, x, r, b)
     neighborhood = Vector{Tuple{Int64, Int64}}()
     for task in 1:size(list_of_agent)[1]
-        for agent in 1:m 
+        for agent in 1:size(x)[1] 
             if agent == list_of_agent[task]
                 continue
             end
@@ -34,7 +34,7 @@ function RL_change_one_agent(list_of_agent, x, r, b, m, c, best_cost, stop)
     end
     best_delta = 0
     best_neighbor = nothing
-    neighborhood = change_one_agent(list_of_agent, x, r, b, m)
+    neighborhood = change_one_agent(list_of_agent, x, r, b)
     if size(neighborhood)[1] != 0
         for (agent, task) in neighborhood
             agent_before = list_of_agent[task]
@@ -59,7 +59,7 @@ function RL_tabou_change_one_agent(list_of_agent, x, r, b, m, c, tabou_list, tab
     stop = true
     new_cost = -Inf
     best_neighbor = nothing
-    neighborhood = change_one_agent(list_of_agent, x, r, b, m)
+    neighborhood = change_one_agent(list_of_agent, x, r, b)
     if size(neighborhood)[1] == 0
         return stop, x, list_of_agent, tabou_list, -1
     end

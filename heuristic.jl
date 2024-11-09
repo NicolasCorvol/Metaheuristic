@@ -201,6 +201,9 @@ function cost_sol(c, x)
     return cost
 end
 
+function ressource_left(x, r, b)
+    return sum(b[agent] - sum(x[agent, :] .* r[agent, :]) for agent in 1:size(x, 1))
+end
 
 # Vérification de la validité d'une solution
 function verify_sol(x, r, b)
@@ -208,13 +211,13 @@ function verify_sol(x, r, b)
     for task in 1:size(x)[2]
         if sum(x[:, task]) != 1
             # println("Task $task is affected to $(sum(x[:, task])) agents")
-        sol_ok = false
+            sol_ok = false
         end
     end
     for agent in 1:size(x)[1]
-            if sum(x[agent, :] .* r[agent, :]) > b[agent]
-                # println("Agent $agent does not have enough ressources:  $(sum(x[agent, :] .* r[agent, :])) consumed > $(b[agent]) available.")
-                sol_ok = false
+        if sum(x[agent, :] .* r[agent, :]) > b[agent]
+            # println("Agent $agent does not have enough ressources:  $(sum(x[agent, :] .* r[agent, :])) consumed > $(b[agent]) available.")
+            sol_ok = false
         end
     end
     # if sol_ok
@@ -224,4 +227,98 @@ function verify_sol(x, r, b)
     #     println("Solution infeasible")
     # end
     return sol_ok
+end
+
+
+# ----------------- MULTI START ---------------------------
+
+function multi_start(r, c, b, m, t, max_sol_nb)
+    diff_x =[]
+    diff_task_to_agent = []
+    diff_heuristic_names = []
+    cost_sols = []
+    emptiness = []
+    # cost by ressource 
+    x_0, task_to_agent_0 = greedy_cost_by_ressource_heuristic(r, c, b, m, t)
+    if verify_sol(x_0, r, b)
+        cost_0 = cost_sol(c, x_0)
+        r_left_0 = ressource_left(x_0, r, b)
+        append!(diff_heuristic_names, ["greedy_cost_by_ressource_heuristic"])
+        append!(diff_x, [x_0])
+        append!(diff_task_to_agent, [task_to_agent_0])
+        append!(cost_sols, [cost_0])
+        append!(emptiness, [r_left_0])
+    end
+    # min ressource
+    for _ in 1:20
+        x_1, task_to_agent_1 = greedy_random_min_ressource_heuristic(r, c, b, m, t)
+        if !verify_sol(x_1, r, b) || task_to_agent_1 in diff_task_to_agent 
+            continue
+        end
+        cost_1 = cost_sol(c, x_1)
+        r_left_1 = ressource_left(x_1, r, b)
+        append!(diff_heuristic_names, ["greedy_random_min_ressource_heuristic"])
+        append!(diff_x, [x_1])
+        append!(diff_task_to_agent, [task_to_agent_1])
+        append!(cost_sols, [cost_1])
+        append!(emptiness, [r_left_1])
+    end
+    # random c/r
+    for _ in 1:20
+        x_2, task_to_agent_2 = greedy_random_cost_effectiveness_heuristic(r, c, b, m, t)
+        if !verify_sol(x_2, r, b) || task_to_agent_2 in diff_task_to_agent
+            continue
+        end
+        cost_2 = cost_sol(c, x_2)
+        r_left_2 = ressource_left(x_2, r, b)
+        append!(diff_heuristic_names, ["greedy_random_cost_effectiveness_heuristic"])
+        append!(diff_x, [x_2])
+        append!(diff_task_to_agent, [task_to_agent_2])
+        append!(cost_sols, [cost_2])
+        append!(emptiness, [r_left_2])
+    end
+    # grasp
+    for alpha in [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 0.8, 0.9]
+        for _ in 1:20
+            x_3, task_to_agent_3 = grasp_constructive_phase(r, c, b, m, t, alpha)
+            if !verify_sol(x_3, r, b) || task_to_agent_3 in diff_task_to_agent
+                continue
+            end
+            cost_3 = cost_sol(c, x_3)
+            r_left_3 = ressource_left(x_3, r, b)
+            append!(diff_heuristic_names, ["grasp_constructive_phase_$alpha"])
+            append!(diff_x, [x_3])
+            append!(diff_task_to_agent, [task_to_agent_3])
+            append!(cost_sols, [cost_3])
+            append!(emptiness, [r_left_3])
+        end
+    end
+    # full random
+    for _ in 1:20
+        x_4, task_to_agent_4 = greedy_random_heuristic(r, c, b, m, t)
+        if !verify_sol(x_4, r, b) || task_to_agent_4 in diff_task_to_agent
+            continue
+        end
+        cost_4 = cost_sol(c, x_4)
+        r_left_4 = ressource_left(x_4, r, b)
+        append!(diff_heuristic_names, ["greedy_random_heuristic"])
+        append!(diff_x, [x_4])
+        append!(diff_task_to_agent, [task_to_agent_4])
+        append!(cost_sols, [cost_4])
+        append!(emptiness, [r_left_4])
+    end
+
+    ## trier les solution par ... 
+    ## première idée : cout croissant
+    ## on pourrait utiliser de l'aide à la décision multi-critère 
+    # scores = [cost_weight * cost_sols[i] + emptiness_weight * ressource_left[i] for i in 1:length(diff_x)]
+
+    sorted_indices = sortperm(cost_sols, rev=true)
+    max_nb_of_sols = min(max_sol_nb, length(diff_x))
+    sorted_x = diff_x[sorted_indices][1:max_nb_of_sols]
+    sorted_task_to_agent = diff_task_to_agent[sorted_indices][1:max_nb_of_sols]
+    sorted_heuristic_names = diff_heuristic_names[sorted_indices][1:max_nb_of_sols]
+    sorted_costs = cost_sols[sorted_indices][1:max_nb_of_sols]
+    sorted_emptiness = emptiness[sorted_indices][1:max_nb_of_sols]
+    return sorted_x, sorted_task_to_agent, sorted_heuristic_names, sorted_costs, sorted_emptiness
 end
