@@ -16,7 +16,8 @@ function main()
     println(Threads.nthreads())
     my_lock = ReentrantLock()
     opts = Dict{String,Int32}()
-    all_opts = getOpts()
+    all_opts = getOptsgap_max()
+    all_opt = getOpts_min()
     df = DataFrame(Instance = ["gap$(i)_$(j+1)" for i in 1:12 for j in 0:4],
                    Opts = [all_opts["gap$(i)_$(j+1)"] for i in 1:12 for j in 0:4])
     best_initial_cost = []
