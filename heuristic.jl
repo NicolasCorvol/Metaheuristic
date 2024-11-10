@@ -184,6 +184,62 @@ function grasp_constructive_phase(r, c, b, m, t, alpha)
             rev = true)
         not_affected__sorted_tasks = [task for (task, _) in sorted_task]
     end
+    return x, task_to_agent, r_left
+end
+
+
+function grasp_with_local_search(r, c, b, m, t, max_iterations, alpha, opt)
+    best_x = nothing
+    best_task_to_agent = nothing
+    best_cost = 0
+
+    for iteration in 1:max_iterations
+        x, task_to_agent, r_left = constructive_phase(r, c, b, m, t, alpha)
+        
+        if verify_sol(x, r, b)
+            x, task_to_agent = local_search(x, task_to_agent, r_left, r, c, b, m, t)
+            cost = cost_sol(c, x)
+            if cost > best_cost
+                best_cost = cost
+                best_x = x
+                best_task_to_agent = task_to_agent
+            end
+        end
+        if best_cost == opt
+            println("OPTIMAL")
+            break
+        end
+    end
+    return best_cost, best_x, best_task_to_agent
+end
+
+
+
+
+function local_search(x, task_to_agent, r_left, r, c, b, m, t)
+    improved = true
+    while improved
+        improved = false
+        for task in 1:t
+            current_agent = task_to_agent[task]
+            for agent in 1:m
+                if agent != current_agent
+                    current_cost = c[current_agent, task]
+                    new_cost = c[agent, task]
+                    if new_cost > current_cost && r_left[agent] >= r[agent, task]
+                        task_to_agent[task] = agent
+                        x[agent, task] = 1
+                        x[current_agent, task] = 0
+                        r_left[agent] -= r[agent, task]
+                        r_left[current_agent] += r[current_agent, task]
+                        @assert verify_sol(x, r, b)
+                        improved = true
+                        break
+                    end
+                end
+            end
+        end
+    end
     return x, task_to_agent
 end
 

@@ -34,7 +34,7 @@ function descente_VND(r, b, m, t, c, opt, x, list_of_agent)
     
     # println("number of iterations: $it")
     # println("improvement: \n final cost: $best_cost VS opt : $opt")
-    return x
+    return x, list_of_agent
 end
 
 
@@ -216,71 +216,43 @@ end
 
 function recuit_simule(r, b, m, t, c, opt, x, list_of_agent, T)
     @assert verify_sol(x, r, b)
-
     # Initialisation
     initial_cost = cost_sol(c, x)
     println("Initial cost: $initial_cost")
     best_cost = initial_cost
     current_cost = initial_cost
-    best_x = deepcopy(x)
+    best_x = copy(x)
     it = 0 
-    mu = 0.95
-    while it < 3000
+    T = t*2
+    mu = 0.9
+    while it < 100*t
         if mod(it, 100) == 0
             T = mu*T
         end
-        random_number = 2
-        # Génération du voisinage et mélange
-        # random_number = rand([1])
-        # if random_number == 1
-        #     neighborhood = shuffle(change_one_agent(list_of_agent, x, r, b, m))     
-        #     if !isempty(neighborhood)
-        #         for (agent, task) in neighborhood
-        #             agent_before = list_of_agent[task]
-        #             delta_cost = delta_cost_change_one_agent(task, agent_before, agent, c)
-                    
-        #             # Critère d'acceptation
-        #             if delta_cost > 0 || exp(delta_cost / T) > rand()
-        #                 x, list_of_agent = update_sol_change_one_agent(x, list_of_agent, (agent, task))
-        #                 current_cost += delta_cost
-        #                 @assert current_cost == cost_sol(c, x)
-                        
-        #                 # Maj de la meilleure solution
-        #                 if current_cost > best_cost
-        #                     best_x = deepcopy(x)
-        #                     best_cost = current_cost
-        #                     println("New best cost: $best_cost at iteration $it")
-        #                 end
-        #                 break
-        #             end
-        #         end
-        #     end
-        # end
-        if random_number == 2
-            neighborhood = shuffle(change_two_agents(list_of_agent, x, r, b, m))     
-            if !isempty(neighborhood)
-                for (agent_1, task_1, agent_2, task_2) in neighborhood
-                    agent_before_1 = list_of_agent[task_1]
-                    agent_before_2 = list_of_agent[task_2]
-                    delta_cost = delta_cost_change_two_agents(agent_before_1, task_1, agent_before_2, task_2, agent_1, agent_2, c)
-                    
-                    # Critère d'acceptation
-                    if delta_cost > 0 || exp(delta_cost / T) > rand()
-                        x, list_of_agent = update_sol_change_two_agents(x, list_of_agent, (agent_1, task_1, agent_2, task_2))
-                        current_cost += delta_cost
-                        @assert current_cost == cost_sol(c, x)
-                        
-                        # Maj de la meilleure solution
-                        if current_cost > best_cost
-                            best_x = deepcopy(x)
-                            best_cost = current_cost
-                            println("New best cost: $best_cost at iteration $it")
-                        end
-                        break
+        neighborhood = shuffle(swap_task(list_of_agent, x, r, b))
+        if isempty(neighborhood)
+            print("neighborhood empty")
+        end
+        if !isempty(neighborhood)
+            for (task_1, task_2) in neighborhood
+                agent_1 = list_of_agent[task_1] 
+                agent_2 = list_of_agent[task_2] 
+                delta_cost = delta_cost_swap_tasks(agent_1, task_1, agent_2, task_2, c)                    
+                if delta_cost > 0 || exp(delta_cost / T) > rand()
+                    x, list_of_agent = update_sol_swap_tasks(x, list_of_agent, (task_1, task_2))
+                    x, list_of_agent = descente_VND(r, b, m, t, c, opt, x, list_of_agent)
+                    current_cost += delta_cost
+                    @assert current_cost == cost_sol(c, x)
+                    # Maj de la meilleure solution
+                    if current_cost > best_cost
+                        best_x = copy(x)
+                        best_cost = current_cost
+                        println("New best cost: $best_cost at iteration $it")
                     end
+                    break
                 end
             end
-        end   
+        end
         it += 1
         @assert verify_sol(x, r, b)
         
