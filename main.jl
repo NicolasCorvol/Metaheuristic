@@ -8,10 +8,8 @@ using Profile
 using CSV
 using DataFrames
 using OrderedCollections
-<<<<<<< Updated upstream
-using Base.Threads
-=======
 using ProgressMeter
+using Base.Threads
 
 # function main()
 #     opts = Dict{String,Int32}()
@@ -35,7 +33,7 @@ using ProgressMeter
 #                 readfile("instances/gap$i.txt", j)
 #                 start_time = Base.time_ns()
 #                 # x = descente(r, b, m, t, c, opt)
-#                 # x = VND_random_swap_then_RL_change_agent(r, b, m, t, c, opt)
+#                 # x = VND_random_swap_then_LS_change_agent(r, b, m, t, c, opt)
 #                 # x = descente_tabou_after_descente_swap(r, b, m, t, c, opt, 4)
 #                 x = descente_tabou(r, b, m, t, c, taboulen, opt)
 #                 elapsed_time = (Base.time_ns()-start_time) / (1e9)
@@ -58,15 +56,44 @@ using ProgressMeter
 #         end
 #     CSV.write("results/descente_and_tabou_1_12.csv", df, delim=';')
 # end
->>>>>>> Stashed changes
 
+            # readfile("instances/gap$i.txt", j)
+            # max_iterations = 100
+            # best_cost = 0
+            # println(j)
+            # opt = all_opts["gap$(i)_$(j+1)"]
+            # # cost, x, task_to_agent = real_grasp(r, c, b, m, t, max_iterations, alpha, opt)
+            # # println("cost : ", cost, " GAP ", opt - cost)
+            # best_cost = 0 
+            # best_gap = opt
+            # best_method = "No solution found"
+
+            # for i in 1:1
+                # sorted_task, sorted_agent_by_task = sorted_tasks[i], sorted_agents[i]
+                # x, task_to_agent = glouton_heuristic(r, b, m, t, sorted_task, sorted_agent_by_task)
+                # x, task_to_agent = greedy_random_cost_effectiveness_heuristic(r, c, b, m, t)
+                # x, task_to_agent = greedy_random_min_ressource_heuristic(r, c, b, m, t)
+                # x, task_to_agent = grasp_constructive_phase(r, c, b, m, t, alpha)
+                # cost, x, task_to_agent = grasp_with_local_search(r, c, b, m, t, max_iterations, alpha, opt)
+                # verif = verify_sol(x, r, b)
+                # if !verif
+                #     continue
+                # end
+                # # append!(diff_x, [x])
+                # x, task_to_agent = variable_neighborhood_descent(r, b, m, t, c, opt, x, task_to_agent)
+                # x = recuit_simule(r, b, m, t, c, opt, x, task_to_agent)
+                # cost_final_sol = cost_sol(c, x)
+                # gap = round.((opt-cost_final_sol)/opt*100, digits=2)
+                # if cost_final_sol > best_cost
+                #     best_method = ""
+                #     best_cost = cost_final_sol
+            # println("Instance $j")
 
 
 function main()
     println(Threads.nthreads())
     my_lock = ReentrantLock()
     opts = Dict{String,Int32}()
-<<<<<<< Updated upstream
     all_opts = getOpts_max()
     # all_opts = getOpts_min()
     df = DataFrame(Instance = ["gap$(i)_$(j+1)" for i in 1:12 for j in 0:4],
@@ -81,11 +108,9 @@ function main()
         println("###############")
         println(i)
         for j in 0:4
-            best_cost = 0
-            println(j)
-            opt = all_opts["gap$(i)_$(j+1)"]
-            # println("Instance $j")
+            println("Instance $j")
             readfile("instances/gap$i.txt", j)
+            opt = all_opts["gap$(i)_$(j+1)"]
             start_time = time()
             ## MULTI START
             sorted_x, sorted_task_to_agent, sorted_heuristic_names, sorted_costs, sorted_emptiness = multi_start(r, c, b, m, t, 50)
@@ -113,7 +138,7 @@ function main()
                 best_cost = 0
                 for k in 1:30
                     tabu_len = rand(1:floor(Int, sqrt(m)))
-                    x, task_to_agent, best_cost = descente_VND(r, b, m, t, c, opt, x, task_to_agent)
+                    x, task_to_agent, best_cost = variable_neighborhood_descent(r, b, m, t, c, opt, x, task_to_agent)
                     @assert verify_sol(x, r, b)
                     if best_cost == opt
                         found_optimal[] = true
@@ -140,90 +165,20 @@ function main()
                         best_gap = round.((opt-best_cost)/opt*100, digits=2)
                     end
                 end
-                if best_cost_all_methods == opt
-                    found_optimal[] = true
-                    break
-                end
             end
             total_elapsed_time = time() - start_time
             println("Optimum=$opt / final value=$(best_cost_all_methods) / gap=$(opt-best_cost_all_methods)")
-
             append!(sol_values, [best_cost_all_methods])
             append!(times, [total_elapsed_time])
             append!(gaps, [best_gap])
             append!(best_final_heuristic, [best_heuristic])
-=======
-    all_opts = getOpts()
-    df = DataFrame(Instance = ["gap$(i)_$(j+1)" for i in 1:6 for j in 0:4],
-                   Opts = [all_opts["gap$(i)_$(j+1)"] for i in 1:6 for j in 0:4])
-    best_costs = []
-    best_gaps = []
-    best_methods = []
-    alpha = 0.7
-
-    @showprogress for i in 7:12
-        println("###############")
-        println(i)
-        for j in 0:4
-            println("Instance $j")
-            readfile("instances/gap$i.txt", j)
-            max_iterations = 100
-            opt = all_opts["gap$(i)_$(j+1)"]
-            # cost, x, task_to_agent = real_grasp(r, c, b, m, t, max_iterations, alpha, opt)
-            # println("cost : ", cost, " GAP ", opt - cost)
-            best_cost = 0 
-            best_gap = opt
-            best_method = "No solution found"
-
-            for i in 1:1
-                # sorted_task, sorted_agent_by_task = sorted_tasks[i], sorted_agents[i]
-                # x, task_to_agent = glouton_heuristic(r, b, m, t, sorted_task, sorted_agent_by_task)
-                # x, task_to_agent = greedy_random_cost_effectiveness_heuristic(r, c, b, m, t)
-                # x, task_to_agent = greedy_random_min_ressource_heuristic(r, c, b, m, t)
-                # x, task_to_agent = grasp_constructive_phase(r, c, b, m, t, alpha)
-                cost, x, task_to_agent = real_grasp(r, c, b, m, t, max_iterations, alpha, opt)
-                verif = verify_sol(x, r, b)
-                if !verif
-                    continue
-                end
-                # append!(diff_x, [x])
-                x, task_to_agent = descente_VND(r, b, m, t, c, opt, x, task_to_agent)
-                x = recuit_simule(r, b, m, t, c, opt, x, task_to_agent)
-                cost_final_sol = cost_sol(c, x)
-                gap = round.((opt-cost_final_sol)/opt*100, digits=2)
-                if cost_final_sol > best_cost
-                    best_method = ""
-                    best_cost = cost_final_sol
-                end
-            end
-           
-            append!(best_costs, [best_cost])
-            best_gap = round.((opt-best_cost)/opt*100, digits=2)
-            if best_gap == 0
-                append!(best_methods, ["OPT FOUND"])
-            else
-                append!(best_methods, [best_method])
-            end
-            append!(best_gaps, [best_gap])
->>>>>>> Stashed changes
         end
         
     end
-<<<<<<< Updated upstream
-    df[:, "Best initial value"] = best_initial_cost
-    df[:, "Best initial heuristic"] = best_initial_heuristic
-    df[:, "Final values"] = sol_values
-    df[:, "Elapsed time"] = times
-    df[:, "Gap to opt"] = gaps
-    df[:, "Best final heuristic"] = best_final_heuristic
-    CSV.write("results/multi_start_VND_tabu.csv", df, delim=';')
-end
-
-
-=======
-    df[:, "best value"] = best_costs
-    df[:, "Best gap"] = best_gaps
-    df[:, "Best method"] = best_methods
+    df[:, "best value"] = sol_values
+    df[:, "Best gap"] = gaps
+    df[:, "Best method"] = best_final_heuristic
+    df[:, "Time"] = times
     CSV.write("results/grasp_VND_rs4.csv", df, delim=';') 
 end
 
@@ -296,7 +251,7 @@ end
 #                 if best_cost < opt
 #                     x = diff_x[i] 
 #                     task_to_agent = diff_agent_to_task[i]
-#                     x = descente_VND(r, b, m, t, c, opt, x, task_to_agent)
+#                     x = variable_neighborhood_descent(r, b, m, t, c, opt, x, task_to_agent)
 #                     verif = verify_sol(x, r, b)
 #                     if !verif
 #                         continue
@@ -344,7 +299,16 @@ end
 #     df[:, "Best method"] = best_methods
 #     CSV.write("results/desente_graps_random_agent_vnd_tabou.csv", df, delim=';') 
 # end
->>>>>>> Stashed changes
+#     df[:, "Best initial value"] = best_initial_cost
+#     df[:, "Best initial heuristic"] = best_initial_heuristic
+#     df[:, "Final values"] = sol_values
+#     df[:, "Elapsed time"] = times
+#     df[:, "Gap to opt"] = gaps
+#     df[:, "Best final heuristic"] = best_final_heuristic
+#     CSV.write("results/multi_start_VND_tabu.csv", df, delim=';')
+# end
+
+
 
 
 main()

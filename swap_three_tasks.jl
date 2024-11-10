@@ -1,4 +1,4 @@
-## Swap two tasks
+# ---------Voisinage pour l'échange de trois tâches d'agents différents -------------
 
 function check_swap_is_possible(x, r, b, task_1, agent_1, task_2, agent_2, task_3, agent_3)
     """This function checks if this swap is possible: 
@@ -16,6 +16,7 @@ function check_swap_is_possible(x, r, b, task_1, agent_1, task_2, agent_2, task_
     return true
 end
 
+# Construction des voisins admissibles
 function swap_three_tasks(list_of_agent, x, r, b)
     neighborhood = Vector{Tuple{Int64, Int64, Int64}}()
     for task_1 in 1:size(list_of_agent)[1]
@@ -41,15 +42,17 @@ function swap_three_tasks(list_of_agent, x, r, b)
     return neighborhood
 end
 
+
+# Calcul de la différence de coût
 function delta_cost_swap_three_tasks(task_1, previous_agent_1, task_2, previous_agent_2, task_3, previous_agent_3, c)
-    """Calculate the delta cost of the swap 1 -> 2 // 2 -> 3 // 3 -> 1 """  
     new_cost = c[previous_agent_1, task_3] + c[previous_agent_2, task_1] + c[previous_agent_3, task_2]
     previous_cost = c[previous_agent_1, task_1] + c[previous_agent_2, task_2] + c[previous_agent_3, task_3]    
     return new_cost - previous_cost 
 end
 
+
+# Mise à jour de la solution après cet échange des 3 tâches
 function update_sol_swap_three_tasks(x, list_of_agent, best_neighbor)
-    """Returns the new solutions after swaping the tasks."""    
     task_1 = best_neighbor[1]
     task_2 = best_neighbor[2]
     task_3 = best_neighbor[3]
@@ -71,7 +74,9 @@ function update_sol_swap_three_tasks(x, list_of_agent, best_neighbor)
     return x, list_of_agent
 end
 
-function RL_swap_three_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
+
+# Recherche locale pour ce voisinage d'échange de trois tâches
+function LS_swap_three_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
     if !stop
         return stop, best_cost, x, list_of_agent
     end
@@ -92,13 +97,14 @@ function RL_swap_three_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
         end
     end
     if !stop
-        # println(best_delta)
         best_cost += best_delta
         x, list_of_agent = update_sol_swap_three_tasks(x, list_of_agent, best_neighbor)
     end
     return stop, best_cost, x, list_of_agent
 end
 
+
+# Effectue un trois-échange aléatoire parmi tout ceux réalisables 
 function random_three_task_swap(x, list_of_agent, current_cost, r, b, c)
     neighborhood = swap_three_tasks(list_of_agent, x, r, b)
     if size(neighborhood)[1] == 0

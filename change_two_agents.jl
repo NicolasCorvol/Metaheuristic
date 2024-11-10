@@ -1,5 +1,6 @@
-## Change two tasks
+# ---------Voisinage pour le changement d'agent pour deux tâches -------------
 
+# Construction des voisins admissibles
 function change_two_agents(list_of_agent, x, r, b, m)
     neighborhood = Vector{Tuple{Int64, Int64, Int64, Int64}}()
     for task_1 in 1:size(list_of_agent)[1]
@@ -25,10 +26,14 @@ function change_two_agents(list_of_agent, x, r, b, m)
     return neighborhood
 end
 
+
+# Calcul de la différence de coût
 function delta_cost_change_two_agents(previous_agent_1, task_1, previous_agent_2, task_2, new_agent_1, new_agent_2, c)
     return (c[new_agent_1, task_1] + c[new_agent_2, task_2]) - (c[previous_agent_1, task_1] + c[previous_agent_2, task_2])
 end
 
+
+# Modification de la solution s'il y a changement d'agent
 function update_sol_change_two_agents(x, list_of_agent, best_neighbor)
     agent_before_1 = list_of_agent[best_neighbor[2]]
     agent_before_2 = list_of_agent[best_neighbor[4]]
@@ -42,7 +47,9 @@ function update_sol_change_two_agents(x, list_of_agent, best_neighbor)
     return x, list_of_agent
 end
 
-function RL_change_two_agents(list_of_agent, x, r, b, m, c, best_cost, stop)
+
+# Recherche locale pour ce voisinage de changement de deux agents
+function LS_change_two_agents(list_of_agent, x, r, b, m, c, best_cost, stop)
     if !stop
         return stop, best_cost, x, list_of_agent
     end

@@ -4,7 +4,12 @@ include("change_two_agents.jl")
 include("swap_two_tasks.jl")
 include("swap_three_tasks.jl")
 
-function descente_VND(r, b, m, t, c, opt, x, list_of_agent)
+
+# Descente à voisinage variable avec 3 structures de voisinages : 
+# 1. Changement d'agent pour une tâche
+# 2. Echange de deux tâches d'agents différents
+# 3. Echange de trois tâches d'agents différents
+function variable_neighborhood_descent(r, b, m, t, c, opt, x, list_of_agent)
     @assert verify_sol(x, r, b)
     initial_cost = cost_sol(c, x)
     best_cost = initial_cost
@@ -13,15 +18,14 @@ function descente_VND(r, b, m, t, c, opt, x, list_of_agent)
     while !stop && it < 1000
         it += 1
         stop = true
-        stop, best_cost, x, list_of_agent = RL_change_one_agent(list_of_agent, x, r, b, m, c, best_cost, stop)
+        stop, best_cost, x, list_of_agent = LS_change_one_agent(list_of_agent, x, r, b, m, c, best_cost, stop)
         if stop
-            stop, best_cost, x, list_of_agent = RL_swap_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
+            stop, best_cost, x, list_of_agent = LS_swap_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
         end
         if stop
-            stop, best_cost, x, list_of_agent = RL_swap_three_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
+            stop, best_cost, x, list_of_agent = LS_swap_three_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
         end
         @assert verify_sol(x, r, b)
-        # println(best_cost, " ",  cost_sol(c, x))
         if best_cost == opt
             stop = true
             println("OPTIMAL FOUND")
@@ -47,7 +51,7 @@ function descente_tabou_change_agent(x, list_of_agent, r, b, m, t, c, taboulen, 
     stop = false
     while !stop && it < 1000
         it += 1
-        stop, x_current, list_of_agent_current, tabou_list, new_cost = RL_tabou_change_one_agent(list_of_agent_current, x_current, r, b, m, c, tabou_list, taboulen, best_cost)
+        stop, x_current, list_of_agent_current, tabou_list, new_cost = LS_tabou_change_one_agent(list_of_agent_current, x_current, r, b, m, c, tabou_list, taboulen, best_cost)
         if !stop
             current_cost = new_cost
             if new_cost > best_cost
@@ -72,7 +76,7 @@ function descente_tabou_after_descente_swap(r, b, m, t, c, opt, taboulen)
     sorted_task, sorted_agent = backpack_sorted(r, b, m, t)
     x, list_of_agent = glouton_heuristic(r, b, m, t, sorted_task, sorted_agent)
     ## descente swap
-    x, list_of_agent = descente_VND(r, b, m, t, c, opt, x, list_of_agent)
+    x, list_of_agent = variable_neighborhood_descent(r, b, m, t, c, opt, x, list_of_agent)
     @assert verify_sol(x, r, b)
     cost_after_descente = cost_sol(c, x)
     println("Cost after descente sol: ", cost_after_descente, " VS OPT: ", opt, "==> GAP = ", opt-cost_after_descente)
@@ -96,7 +100,7 @@ function descente_change_agent(r, b, m, t, c, opt, x, list_of_agent)
     while !stop && it < 1000
         it += 1
         stop = true
-        stop, best_cost, x, list_of_agent = RL_change_one_agent(list_of_agent, x, r, b, m, c, best_cost, stop)
+        stop, best_cost, x, list_of_agent = LS_change_one_agent(list_of_agent, x, r, b, m, c, best_cost, stop)
         @assert verify_sol(x, r, b)
         # println(best_cost, " ",  cost_sol(c, x))
         if best_cost == opt
@@ -129,7 +133,7 @@ function descente_tabou(r, b, m, t, c, taboulen, opt, x_ini, list_of_agent_ini)
     stop = false
     while !stop && it < 1000
         it += 1
-        stop, x_current, list_of_agent_current, tabou_list, new_cost = RL_tabou_change_one_agent(list_of_agent_current, x_current, r, b, m, c, tabou_list, taboulen, best_cost)
+        stop, x_current, list_of_agent_current, tabou_list, new_cost = LS_tabou_change_one_agent(list_of_agent_current, x_current, r, b, m, c, tabou_list, taboulen, best_cost)
         if !stop
             current_cost = new_cost
             if new_cost > best_cost
@@ -156,7 +160,7 @@ function descente_tabou(r, b, m, t, c, taboulen, opt, x_ini, list_of_agent_ini)
 end
 
 
-function VND_random_swap_then_RL_change_agent(r, b, m, t, c, opt)
+function VND_random_swap_then_LS_change_agent(r, b, m, t, c, opt)
     sorted_task, sorted_agent = backpack_sorted(r, b, m, t)
     x_current, list_of_agent_current = glouton_heuristic(r, b, m, t, sorted_task, sorted_agent)
     x_best = copy(x_current)
@@ -172,7 +176,7 @@ function VND_random_swap_then_RL_change_agent(r, b, m, t, c, opt)
         can_two_swap, x_current, list_of_agent_current, current_cost = random_two_task_swap(x_current, list_of_agent_current, current_cost, r, b, c)
         if can_two_swap
             nb_2_swap += 1
-            _, current_cost, x_current, list_of_agent_current = RL_change_one_agent(list_of_agent_current, x_current, r, b, m, c, current_cost, stop)
+            _, current_cost, x_current, list_of_agent_current = LS_change_one_agent(list_of_agent_current, x_current, r, b, m, c, current_cost, stop)
         end
         if current_cost > best_cost
             @assert cost_sol(c, x_current) == current_cost
@@ -183,7 +187,7 @@ function VND_random_swap_then_RL_change_agent(r, b, m, t, c, opt)
             can_three_swap, x_current, list_of_agent_current, current_cost = random_three_task_swap(x_current, list_of_agent_current, current_cost, r, b, c)
             if can_three_swap
                 nb_3_swap += 1
-                stop, current_cost, x_current, list_of_agent_current = RL_change_one_agent(list_of_agent_current, x_current, r, b, m, c, current_cost, stop)
+                stop, current_cost, x_current, list_of_agent_current = LS_change_one_agent(list_of_agent_current, x_current, r, b, m, c, current_cost, stop)
             end
         end
         if current_cost > best_cost
@@ -237,7 +241,7 @@ function recuit_simule(r, b, m, t, c, opt, x, list_of_agent, T)
                 delta_cost = delta_cost_swap_tasks(agent_1, task_1, agent_2, task_2, c)                    
                 if delta_cost > 0 || exp(delta_cost / T) > rand()
                     x, list_of_agent = update_sol_swap_tasks(x, list_of_agent, (task_1, task_2))
-                    x, list_of_agent = descente_VND(r, b, m, t, c, opt, x, list_of_agent)
+                    x, list_of_agent = variable_neighborhood_descent(r, b, m, t, c, opt, x, list_of_agent)
                     current_cost += delta_cost
                     @assert current_cost == cost_sol(c, x)
                     # Maj de la meilleure solution

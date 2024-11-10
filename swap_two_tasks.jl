@@ -1,7 +1,6 @@
-## Swap two tasks
+# ---------Voisinage pour l'échange de deux tâches d'agents différents -------------
 
-# Fonction renvoyant le voisinage sous la forme de couple 
-# de tâche à swap
+# Construction des voisins admissibles
 function swap_task(list_of_agent, x, r, b)
     neighborhood = Vector{Tuple{Int64, Int64}}()
     for task_1 in 1:size(list_of_agent)[1]
@@ -19,11 +18,14 @@ function swap_task(list_of_agent, x, r, b)
     return neighborhood
 end
 
+
+# Calcul de la différence de coût
 function delta_cost_swap_tasks(previous_agent_1, task_1, previous_agent_2, task_2, c)
     return c[previous_agent_1, task_2] + c[previous_agent_2, task_1]  - (c[previous_agent_1, task_1] + c[previous_agent_2, task_2])
 end
 
-# Fonction qui effectue le swap
+
+# Mise à jour de la solution après échange de deux tâches
 function update_sol_swap_tasks(x, list_of_agent, best_neighbor)
     task_1 = best_neighbor[1]
     task_2 = best_neighbor[2]
@@ -40,8 +42,9 @@ function update_sol_swap_tasks(x, list_of_agent, best_neighbor)
     return x, list_of_agent
 end
 
-# Recherche locale du swap 
-function RL_swap_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
+
+# Recherche locale pour ce voisinage d'échange de deux tâches
+function LS_swap_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
     if !stop
         return stop, best_cost, x, list_of_agent
     end
@@ -67,7 +70,8 @@ function RL_swap_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
     return stop, best_cost, x, list_of_agent
 end
 
-# Effectue un swap random parmis tout ceux réalisables 
+
+# Effectue un deux-échange aléatoire parmi tout ceux réalisables 
 function random_two_task_swap(x, list_of_agent, current_cost, r, b, c)
     neighborhood = swap_task(list_of_agent, x, r, b)
     if size(neighborhood)[1] == 0

@@ -1,13 +1,6 @@
 include("change_one_agent.jl")
 include("swap_two_tasks.jl")
 
-function update_sol_agent_to_task(x, list_of_agent, new_agent, task)
-    agent_before = list_of_agent[task]
-    x[new_agent, task] = 1
-    x[agent_before, task] = 0
-    list_of_agent[task] = new_agent
-    return x, list_of_agent
-end
 
 function tabu_change_and_swap(r, b, m, t, c, tabu_len, opt, x_ini, list_of_agent_ini, max_it, max_it_without_improvement)
     # initialize sol
@@ -55,13 +48,9 @@ function tabu_change_and_swap(r, b, m, t, c, tabu_len, opt, x_ini, list_of_agent
     return x_best, list_of_agent_best, best_cost 
 end
 
-function RL_tabu_change_agent(list_of_agent, x, neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
+function LS_tabu_change_agent(list_of_agent, x, neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
     best_neighbour = nothing
     for (agent, task) in neighborhood
-        # x_temp = copy(x)
-        # list_of_agent_temp = copy(list_of_agent)
-        # x_temp, list_of_agent_temp = update_sol_agent_to_task(x_temp, list_of_agent_temp, agent, task)
-        # cost = cost_sol(c, x_temp)
         previous_agent = list_of_agent[task]
         delta_cost = delta_cost_change_one_agent(task, previous_agent, agent, c)
         if !((agent, task) in tabu_list) && delta_cost > best_delta
@@ -80,13 +69,9 @@ function RL_tabu_change_agent(list_of_agent, x, neighborhood, r, b, c, best_delt
     return best_delta, best_neighbour
 end
 
-function RL_tabu_swap_tasks(list_of_agent, x, neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
+function LS_tabu_swap_tasks(list_of_agent, x, neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
     best_neighbour = nothing
     for (task_1, task_2) in neighborhood
-        # x_temp = copy(x)
-        # list_of_agent_temp = copy(list_of_agent)
-        # x_temp, list_of_agent_temp = update_sol_agent_to_task(x_temp, list_of_agent_temp, list_of_agent[task_2], task_1)
-        # x_temp, list_of_agent_temp = update_sol_agent_to_task(x_temp, list_of_agent_temp, list_of_agent[task_1], task_2)
         previous_agent_1 = list_of_agent[task_1]
         previous_agent_2 = list_of_agent[task_2]
         delta_cost = delta_cost_swap_tasks(previous_agent_1, task_1, previous_agent_2, task_2, c)
@@ -111,16 +96,15 @@ function tabu_search_change_swap(list_of_agent, x, r, b, c, tabu_list, tabu_len,
     best_delta = -Inf
     change_agent_neighborhood = change_one_agent(list_of_agent, x, r, b)
     swap_neighborhood = swap_task(list_of_agent, x, r, b)
-    # RL change agent 
-    best_delta, best_change_agent_neighbour = RL_tabu_change_agent(list_of_agent, x, change_agent_neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
-    best_delta, best_swap_neighbour = RL_tabu_swap_tasks(list_of_agent, x, swap_neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
+    # LS change agent 
+    best_delta, best_change_agent_neighbour = LS_tabu_change_agent(list_of_agent, x, change_agent_neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
+    best_delta, best_swap_neighbour = LS_tabu_swap_tasks(list_of_agent, x, swap_neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
     @assert (best_change_agent_neighbour != nothing || best_swap_neighbour != nothing)
     add_to_tabu = nothing
     # if the best neighbour is swap
     if best_swap_neighbour != nothing 
         # update sol
-        x, list_of_agent = update_sol_agent_to_task(x, list_of_agent, best_swap_neighbour[1][1], best_swap_neighbour[1][2])
-        x, list_of_agent = update_sol_agent_to_task(x, list_of_agent, best_swap_neighbour[2][1], best_swap_neighbour[2][2])
+        x, list_of_agent = update_sol_swap_tasks(x, list_of_agent, (best_swap_neighbour[1][2], best_swap_neighbour[2][2]))
         # put the one with best cost in the tabu list
         if c[best_swap_neighbour[1][1], best_swap_neighbour[1][2]] >= c[best_swap_neighbour[2][1], best_swap_neighbour[2][2]]
             add_to_tabu = best_swap_neighbour[1]
@@ -129,7 +113,7 @@ function tabu_search_change_swap(list_of_agent, x, r, b, c, tabu_list, tabu_len,
         end
     # if the best neighbour is change agent
     else
-        x, list_of_agent = update_sol_agent_to_task(x, list_of_agent, best_change_agent_neighbour[1][1], best_change_agent_neighbour[1][2])
+        x, list_of_agent = update_sol_change_one_agent(x, list_of_agent, best_change_agent_neighbour[1])
         add_to_tabu = best_change_agent_neighbour[1]
     end
     
@@ -152,24 +136,23 @@ function tabu_search_random_change_or_swap(list_of_agent, x, r, b, c, tabu_list,
         if size(change_agent_neighborhood)[1] == 0
             return x, list_of_agent, tabu_list, 0
         end
-        best_delta, best_change_agent_neighbour = RL_tabu_change_agent(list_of_agent, x, change_agent_neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
+        best_delta, best_change_agent_neighbour = LS_tabu_change_agent(list_of_agent, x, change_agent_neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
         if best_change_agent_neighbour == nothing
             return x, list_of_agent, tabu_list, 0
         end
-        x, list_of_agent = update_sol_agent_to_task(x, list_of_agent, best_change_agent_neighbour[1][1], best_change_agent_neighbour[1][2])
+        x, list_of_agent = update_sol_change_one_agent(x, list_of_agent, best_change_agent_neighbour[1])
         add_to_tabu = best_change_agent_neighbour[1]
     else
         swap_neighborhood = swap_task(list_of_agent, x, r, b)
         if size(swap_neighborhood)[1] == 0
             return x, list_of_agent, tabu_list, 0
         end
-        best_delta, best_swap_neighbour = RL_tabu_swap_tasks(list_of_agent, x, swap_neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
+        best_delta, best_swap_neighbour = LS_tabu_swap_tasks(list_of_agent, x, swap_neighborhood, r, b, c, best_delta, tabu_list, list_of_agent_best)
         if best_swap_neighbour == nothing
             return x, list_of_agent, tabu_list, 0
         end
         # update sol
-        x, list_of_agent = update_sol_agent_to_task(x, list_of_agent, best_swap_neighbour[1][1], best_swap_neighbour[1][2])
-        x, list_of_agent = update_sol_agent_to_task(x, list_of_agent, best_swap_neighbour[2][1], best_swap_neighbour[2][2])
+        x, list_of_agent = update_sol_swap_tasks(x, list_of_agent, (best_swap_neighbour[1][2], best_swap_neighbour[2][2]))
         # put the one with best cost in the tabu list
         if c[best_swap_neighbour[1][1], best_swap_neighbour[1][2]] >= c[best_swap_neighbour[2][1], best_swap_neighbour[2][2]]
             add_to_tabu = best_swap_neighbour[1]
@@ -188,5 +171,3 @@ function tabu_search_random_change_or_swap(list_of_agent, x, r, b, c, tabu_list,
     @assert size(tabu_list)[1] <= tabu_len
     return x, list_of_agent, tabu_list, best_delta
 end
-
-
