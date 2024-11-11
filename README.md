@@ -32,3 +32,15 @@ Pour installer les dépendances nécessaires, exécutez :
 ```julia
 using Pkg
 Pkg.add(["CSV", "DataFrames", "OrderedCollections", "ProgressMeter"])
+
+
+## Fonctionnement Principal
+
+La fonction principale `main()` exécute l'ensemble du processus. Voici un résumé des étapes :
+
+1. **Lecture des instances** : Les instances de problèmes sont lues à partir de fichiers avec `readfile()`.
+2. **Multi-Démarrage** : Plusieurs solutions initiales sont générées pour chaque instance à l'aide de différentes heuristiques.
+3. **Amélioration des solutions initiales** : Pour chaque solution initiale, des métaheuristiques comme la descente de voisinage variable et la recherche tabou sont utilisées pour améliorer la solution.
+4. **Évaluation des solutions** : À chaque itération, la qualité de la solution (coût final, écart par rapport à l'optimum) est calculée et stockée.
+5. **Sauvegarde des résultats** : Les résultats finaux (meilleure solution, écart par rapport à l'optimum, méthode utilisée) sont sauvegardés dans un fichier CSV.
+
