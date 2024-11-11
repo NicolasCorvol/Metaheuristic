@@ -56,7 +56,7 @@ Les résultats sont enregistrés dans le dossier `results/` sous forme de fichie
 
   
 ## 📜 Format des Fichiers d'Instance
-Chaque fichier d'instance (par exemple, gap1.txt) doit contenir :
+Chaque fichier d'instance doit contenir :
 - Les ressources disponibles pour chaque agent.
 - Les exigences en ressources des tâches.
 - Les coûts d'affectation des tâches aux agents.
