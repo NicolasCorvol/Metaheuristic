@@ -257,6 +257,16 @@ function cost_sol(c, x)
     return cost
 end
 
+
+function cost_sol_v2(c, x)
+    return sum(c .* x)
+end
+
+function upper_bound(c)
+    return sum(maximum(c[:, task]) for task in 1:size(c)[2])
+end
+
+
 function ressource_left(x, r, b)
     return sum(b[agent] - sum(x[agent, :] .* r[agent, :]) for agent in 1:size(x, 1))
 end
@@ -288,7 +298,7 @@ end
 
 # ----------------- MULTI START ---------------------------
 
-function multi_start(r, c, b, m, t, max_sol_nb)
+function multi_start(r, c, b, m, t, max_sol_nb, minimization=false)
     diff_x =[]
     diff_task_to_agent = []
     diff_heuristic_names = []
