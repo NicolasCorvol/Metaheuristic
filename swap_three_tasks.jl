@@ -17,14 +17,14 @@ function check_swap_is_possible(x, r, b, task_1, agent_1, task_2, agent_2, task_
 end
 
 # Construction des voisins admissibles
-function swap_three_tasks(list_of_agent, x, r, b)
+function swap_three_tasks(task_to_agent, x, r, b)
     neighborhood = Vector{Tuple{Int64, Int64, Int64}}()
-    for task_1 in 1:size(list_of_agent)[1]
-        for task_2 in task_1+1:size(list_of_agent)[1]
-            for task_3 in 1+task_2:size(list_of_agent)[1]
-                agent_1 = list_of_agent[task_1] 
-                agent_2 = list_of_agent[task_2] 
-                agent_3 = list_of_agent[task_3]
+    for task_1 in 1:size(task_to_agent)[1]
+        for task_2 in task_1+1:size(task_to_agent)[1]
+            for task_3 in 1+task_2:size(task_to_agent)[1]
+                agent_1 = task_to_agent[task_1] 
+                agent_2 = task_to_agent[task_2] 
+                agent_3 = task_to_agent[task_3]
                 if agent_1 == agent_2 || agent_2 == agent_3 || agent_1 == agent_3
                     continue
                 end
@@ -52,42 +52,42 @@ end
 
 
 # Mise à jour de la solution après cet échange des 3 tâches
-function update_sol_swap_three_tasks(x, list_of_agent, best_neighbor)
+function update_sol_swap_three_tasks(x, task_to_agent, best_neighbor)
     task_1 = best_neighbor[1]
     task_2 = best_neighbor[2]
     task_3 = best_neighbor[3]
-    agent_1_before = list_of_agent[task_1]
-    agent_2_before = list_of_agent[task_2]
-    agent_3_before = list_of_agent[task_3]
+    agent_1_before = task_to_agent[task_1]
+    agent_2_before = task_to_agent[task_2]
+    agent_3_before = task_to_agent[task_3]
     # task_1 to agent_2
     x[agent_1_before, task_1] = 0
     x[agent_2_before, task_1] = 1
-    list_of_agent[task_1] = agent_2_before
+    task_to_agent[task_1] = agent_2_before
     # task_2 to agent_3
     x[agent_2_before, task_2] = 0
     x[agent_3_before, task_2] = 1
-    list_of_agent[task_2] = agent_3_before
+    task_to_agent[task_2] = agent_3_before
     # task_3 to agent_1
     x[agent_3_before, task_3] = 0
     x[agent_1_before, task_3] = 1
-    list_of_agent[task_3] = agent_1_before
-    return x, list_of_agent
+    task_to_agent[task_3] = agent_1_before
+    return x, task_to_agent
 end
 
 
 # Recherche locale pour ce voisinage d'échange de trois tâches
-function LS_swap_three_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
+function LS_swap_three_tasks(task_to_agent, x, r, b, m, c, best_cost, stop)
     if !stop
-        return stop, best_cost, x, list_of_agent
+        return stop, best_cost, x, task_to_agent
     end
     best_delta = 0
     best_neighbor = nothing
-    neighborhood = swap_three_tasks(list_of_agent, x, r, b)
+    neighborhood = swap_three_tasks(task_to_agent, x, r, b)
     if size(neighborhood)[1] != 0
         for (task_1, task_2, task_3) in neighborhood
-            agent_1_before = list_of_agent[task_1]
-            agent_2_before = list_of_agent[task_2]
-            agent_3_before = list_of_agent[task_3]
+            agent_1_before = task_to_agent[task_1]
+            agent_2_before = task_to_agent[task_2]
+            agent_3_before = task_to_agent[task_3]
             delta_cost = delta_cost_swap_three_tasks(task_1, agent_1_before, task_2, agent_2_before, task_3, agent_3_before, c)
             if delta_cost > best_delta
                 best_delta = delta_cost
@@ -98,27 +98,27 @@ function LS_swap_three_tasks(list_of_agent, x, r, b, m, c, best_cost, stop)
     end
     if !stop
         best_cost += best_delta
-        x, list_of_agent = update_sol_swap_three_tasks(x, list_of_agent, best_neighbor)
+        x, task_to_agent = update_sol_swap_three_tasks(x, task_to_agent, best_neighbor)
     end
-    return stop, best_cost, x, list_of_agent
+    return stop, best_cost, x, task_to_agent
 end
 
 
 # Effectue un trois-échange aléatoire parmi tout ceux réalisables 
-function random_three_task_swap(x, list_of_agent, current_cost, r, b, c)
-    neighborhood = swap_three_tasks(list_of_agent, x, r, b)
+function random_three_task_swap(x, task_to_agent, current_cost, r, b, c)
+    neighborhood = swap_three_tasks(task_to_agent, x, r, b)
     if size(neighborhood)[1] == 0
-        return false, x, list_of_agent, current_cost
+        return false, x, task_to_agent, current_cost
     end
     random_neighbor = rand(neighborhood)
     task_1 = random_neighbor[1]
     task_2 = random_neighbor[2]
     task_3 = random_neighbor[3]
-    agent_1_before = list_of_agent[task_1]
-    agent_2_before = list_of_agent[task_2]
-    agent_3_before = list_of_agent[task_3]
+    agent_1_before = task_to_agent[task_1]
+    agent_2_before = task_to_agent[task_2]
+    agent_3_before = task_to_agent[task_3]
     delta_cost = delta_cost_swap_three_tasks(task_1, agent_1_before, task_2, agent_2_before, task_3, agent_3_before, c)
     current_cost += delta_cost
-    x, list_of_agent = update_sol_swap_three_tasks(x, list_of_agent, random_neighbor)
-    return true, x, list_of_agent, current_cost 
+    x, task_to_agent = update_sol_swap_three_tasks(x, task_to_agent, random_neighbor)
+    return true, x, task_to_agent, current_cost 
 end
