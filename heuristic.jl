@@ -92,6 +92,12 @@ function greedy_random_min_ressource_heuristic(r, c, b, m, t)
 end
 
 
+function greedy_min_ressource_heuristic_fixed_order(r, c, b, m, t)
+    sorted_agents = sort_agent_by_increasing_ressource(r, m, t)
+    return greedy_heuristic(r, c, b, m, t, 1:t, sorted_agents)
+end
+
+
 # Heuristique qui trie les tâches dans l'ordre du maximum c/r décroissant
 # et qui affecte ces tâches aux agents ayant le meilleur c/r disponible
 function greedy_cost_by_ressource_heuristic(r, c, b, m, t)

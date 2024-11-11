@@ -21,8 +21,8 @@ function tabu_change_and_swap(r, b, m, t, c, tabu_len, opt, x_ini, task_to_agent
     tabu_list = Vector{Tuple{Int64, Int64}}()
     it = 0
     it_without_improvement = 0 
-    elasped_time = time() - start_time
-    while it < max_iteration && it_without_improvement < max_iteration_without_improvement && elasped_time < max_elapsed_time
+    elapsed_time = time() - start_time
+    while it < max_iteration && it_without_improvement < max_iteration_without_improvement && elapsed_time < max_elapsed_time
         it += 1
         x_current, task_to_agent_current, tabu_list, current_delta = tabu_search_random_change_or_swap(task_to_agent_current, x_current, r, b, c, tabu_list, tabu_len, task_to_agent_best)
         current_cost += current_delta
