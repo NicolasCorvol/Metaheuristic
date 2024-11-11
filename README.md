@@ -32,15 +32,24 @@ Pour installer les dépendances nécessaires, exécutez :
 ```julia
 using Pkg
 Pkg.add(["CSV", "DataFrames", "OrderedCollections", "ProgressMeter"])
-
+```
 
 ## Fonctionnement Principal
 
-La fonction principale `main()` exécute l'ensemble du processus. Voici un résumé des étapes :
+La fonction principale `main()` 
 
-1. **Lecture des instances** : Les instances de problèmes sont lues à partir de fichiers avec `readfile()`.
-2. **Multi-Démarrage** : Plusieurs solutions initiales sont générées pour chaque instance à l'aide de différentes heuristiques.
-3. **Amélioration des solutions initiales** : Pour chaque solution initiale, des métaheuristiques comme la descente de voisinage variable et la recherche tabou sont utilisées pour améliorer la solution.
-4. **Évaluation des solutions** : À chaque itération, la qualité de la solution (coût final, écart par rapport à l'optimum) est calculée et stockée.
-5. **Sauvegarde des résultats** : Les résultats finaux (meilleure solution, écart par rapport à l'optimum, méthode utilisée) sont sauvegardés dans un fichier CSV.
-
+## 📖 Instructions d'Utilisation
+1. **Préparation des Instances** Placez vos instances de problème GAP dans le dossier `instances/` avec des noms de fichiers sous le format gap<i>.txt (par exemple, gap1.txt, gap2.txt).
+2. **Exécution du Programme** Le point d'entrée du programme est la fonction `main()` qui exécute l'ensemble du processus. Voici un résumé des étapes :
+- Lecture des instances : Les instances de problèmes sont lues à partir de fichiers avec `readfile()`.
+- Multi-Démarrage : Plusieurs solutions initiales sont générées pour chaque instance à l'aide de différentes heuristiques.
+- Amélioration des solutions initiales : Pour chaque solution initiale, des métaheuristiques comme la descente de voisinage variable et la recherche tabou sont utilisées pour améliorer la solution.
+- Évaluation des solutions : À chaque itération, la qualité de la solution (coût final, écart par rapport à l'optimum) est calculée et stockée.
+- Sauvegarde des résultats : Les résultats finaux (meilleure solution, écart par rapport à l'optimum, méthode utilisée) sont sauvegardés dans un fichier CSV.
+3. **Résultats**
+Les résultats sont enregistrés dans le dossier `results/` sous forme de fichiers CSV, contenant des informations telles que :
+- Instance : Le nom de l'instance.
+- Best value : La meilleure valeur trouvée.
+- Best gap : L'écart entre la solution trouvée et l'optimum.
+- Best method : La méthode heuristique utilisée pour obtenir la meilleure solution.
+- Opt : La valeur optimale (si elle est donnée).
