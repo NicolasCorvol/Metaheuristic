@@ -61,11 +61,16 @@ Chaque fichier d'instance (par exemple, gap1.txt) doit contenir :
 - Les exigences en ressources des tâches.
 - Les coûts d'affectation des tâches aux agents.
 
+## 🔍 Méthodes de Métaheuristiques
+Les principales métaheuristiques implémentées dans ce projet sont :
+- Recherche Tabou : Utilisée pour éviter les cycles et explorer l'espace de recherche de manière plus efficace.
+- Descente de Voisinage Variable (VND) : Exploite différents voisinages pour améliorer les solutions.
+- Recuit Simulé : Utilisé pour échapper aux minima locaux en acceptant parfois des solutions moins bonnes selon une probabilité.
 
 ## ⚙️ Paramètres Personnalisables
 Vous pouvez ajuster plusieurs paramètres dans le fichier `main.jl` pour tester différentes configurations :
 
-- `tabu_len` : Longueur de la liste tabou (par défaut : 50).
+- `tabu_len` : Longueur de la liste tabou (par défaut : choisie aléatoirement dans un certain intervalle dépendant du nombre de tâches).
 - `max_iterations` : Nombre maximal d'itérations (par défaut : 1000).
 - Temps limite : Temps maximal pour chaque instance (par défaut : 2 minutes).
 
