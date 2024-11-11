@@ -59,15 +59,15 @@ function update_sol_swap_three_tasks(x, task_to_agent, best_neighbor)
     agent_1_before = task_to_agent[task_1]
     agent_2_before = task_to_agent[task_2]
     agent_3_before = task_to_agent[task_3]
-    # task_1 to agent_2
+    # Task_1 to agent_2
     x[agent_1_before, task_1] = 0
     x[agent_2_before, task_1] = 1
     task_to_agent[task_1] = agent_2_before
-    # task_2 to agent_3
+    # Task_2 to agent_3
     x[agent_2_before, task_2] = 0
     x[agent_3_before, task_2] = 1
     task_to_agent[task_2] = agent_3_before
-    # task_3 to agent_1
+    # Task_3 to agent_1
     x[agent_3_before, task_3] = 0
     x[agent_1_before, task_3] = 1
     task_to_agent[task_3] = agent_1_before
