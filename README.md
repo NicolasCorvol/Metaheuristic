@@ -2,7 +2,7 @@
 
 Ce projet implémente diverses heuristiques et métaheuristiques pour résoudre le **Problème d'Affectation Généralisé (GAP)**. L'objectif est d'affecter des tâches à des agents tout en minimisant les coûts ou en maximisant les bénéfices, en respectant les contraintes de ressource de chaque agent.
 
-## Structure des Fichiers
+## 📂 Structure des Fichiers
 
 - `readfile.jl` : Fonction pour lire les données des instances GAP depuis des fichiers texte.
 - `get_opts_values.jl` : Récupère les valeurs optimales pour chaque instance.
@@ -19,7 +19,7 @@ Ensuite, il y a 4 fichiers dédiés aux fonctions spécifiques à chaque voisina
   
 
 
-## Dépendances
+## 🚀 Dépendances
 
 Le projet utilise **Julia** et nécessite les paquets suivants :
 - `CSV` : Pour lire et écrire des fichiers CSV.
@@ -53,4 +53,19 @@ Les résultats sont enregistrés dans le dossier `results/` sous forme de fichie
     - Best gap : L'écart entre la solution trouvée et l'optimum.
     - Best method : La méthode heuristique utilisée pour obtenir la meilleure solution.
     - Opt : La valeur optimale (si elle est donnée).
+
+  
+## 📜 Format des Fichiers d'Instance
+Chaque fichier d'instance (par exemple, gap1.txt) doit contenir :
+- Les ressources disponibles pour chaque agent.
+- Les exigences en ressources des tâches.
+- Les coûts d'affectation des tâches aux agents.
+
+
+## ⚙️ Paramètres Personnalisables
+Vous pouvez ajuster plusieurs paramètres dans le fichier `main.jl` pour tester différentes configurations :
+
+- tabu_len : Longueur de la liste tabou (par défaut : 50).
+- max_iterations : Nombre maximal d'itérations (par défaut : 1000).
+- Temps limite : Temps maximal pour chaque instance (par défaut : 2 minutes).
 
