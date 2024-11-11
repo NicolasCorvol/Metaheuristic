@@ -37,7 +37,7 @@ Pkg.add(["CSV", "DataFrames", "OrderedCollections", "ProgressMeter"])
 
 ## 📖 Instructions d'Utilisation
 
-1. **Préparation des Instances** Placez vos instances de problème GAP dans le dossier `instances/` avec des noms de fichiers sous le format `gap<i>.txt` (par exemple, gap1.txt, gap2.txt).
+1. **Préparation des Instances** Placez vos instances de problème GAP dans le dossier `instances/` avec des noms de fichiers sous le format `gap<i>.txt` (par exemple, `gap1.txt`, `gap2.txt`).
  
 2. **Exécution du Programme** Le point d'entrée du programme est la fonction `main()` qui exécute l'ensemble du processus. Voici un résumé des étapes :
     - Lecture des instances : Les instances de problèmes sont lues à partir de fichiers avec `readfile()`.
@@ -65,7 +65,7 @@ Chaque fichier d'instance (par exemple, gap1.txt) doit contenir :
 ## ⚙️ Paramètres Personnalisables
 Vous pouvez ajuster plusieurs paramètres dans le fichier `main.jl` pour tester différentes configurations :
 
-- tabu_len : Longueur de la liste tabou (par défaut : 50).
-- max_iterations : Nombre maximal d'itérations (par défaut : 1000).
+- `tabu_len` : Longueur de la liste tabou (par défaut : 50).
+- `max_iterations` : Nombre maximal d'itérations (par défaut : 1000).
 - Temps limite : Temps maximal pour chaque instance (par défaut : 2 minutes).
 
